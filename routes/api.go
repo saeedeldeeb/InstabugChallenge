@@ -24,5 +24,13 @@ func Api() {
 			router.Get("/{number}", chatController.Show)
 			router.Post("/", chatController.Store)
 		})
+
+		router.Prefix("applications/{token}/chats/{number}/messages").Group(func(router route.Router) {
+			messageController := controllers.NewMessageController()
+
+			router.Get("/", messageController.Index)
+			router.Get("/{number}", messageController.Show)
+			router.Post("/", messageController.Store)
+		})
 	})
 }

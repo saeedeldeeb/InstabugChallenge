@@ -18,8 +18,11 @@ func NewChatController() *ChatController {
 }
 
 func (r *ChatController) Index(ctx http.Context) http.Response {
+	var application models.Application
+	err := facades.Orm().Query().Where("token", ctx.Request().Input("token")).FirstOrFail(&application)
+
 	var chats []models.Chat
-	err := facades.Orm().Query().Get(&chats)
+	err = facades.Orm().Query().Where("application_id", application.ID).Get(&chats)
 	if err != nil {
 		return nil
 	}
