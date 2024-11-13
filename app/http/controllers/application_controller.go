@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"chat/app/http/transformers"
 	"chat/app/models"
 	"github.com/google/uuid"
 	"github.com/goravel/framework/contracts/http"
@@ -23,7 +24,7 @@ func (r *ApplicationController) Index(ctx http.Context) http.Response {
 	if err != nil {
 		return nil
 	}
-	return ctx.Response().Json(http.StatusOK, applications)
+	return ctx.Response().Json(http.StatusOK, transformers.ApplicationsCollectionResponse(applications))
 }
 
 func (r *ApplicationController) Show(ctx http.Context) http.Response {
@@ -32,7 +33,7 @@ func (r *ApplicationController) Show(ctx http.Context) http.Response {
 	if err != nil {
 		return ctx.Response().Json(http.StatusNotFound, nil)
 	}
-	return ctx.Response().Json(http.StatusOK, application)
+	return ctx.Response().Json(http.StatusOK, transformers.ApplicationResponse(application))
 }
 
 func (r *ApplicationController) Store(ctx http.Context) http.Response {
@@ -44,7 +45,7 @@ func (r *ApplicationController) Store(ctx http.Context) http.Response {
 	if err != nil {
 		return ctx.Response().Json(http.StatusBadRequest, nil)
 	}
-	return ctx.Response().Json(http.StatusCreated, application)
+	return ctx.Response().Json(http.StatusCreated, transformers.ApplicationResponse(application))
 }
 
 func (r *ApplicationController) Update(ctx http.Context) http.Response {
@@ -58,5 +59,5 @@ func (r *ApplicationController) Update(ctx http.Context) http.Response {
 	if err != nil {
 		return ctx.Response().Json(http.StatusBadRequest, nil)
 	}
-	return ctx.Response().Json(http.StatusOK, application)
+	return ctx.Response().Json(http.StatusOK, transformers.ApplicationResponse(application))
 }
