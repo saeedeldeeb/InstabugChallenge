@@ -1,12 +1,20 @@
 package routes
 
 import (
-	"github.com/goravel/framework/facades"
-
 	"chat/app/http/controllers"
+	"github.com/goravel/framework/contracts/route"
+	"github.com/goravel/framework/facades"
 )
 
 func Api() {
-	userController := controllers.NewUserController()
-	facades.Route().Get("/users/{id}", userController.Show)
+	facades.Route().Prefix("api").Group(func(router route.Router) {
+		router.Prefix("applications").Group(func(router route.Router) {
+			applicationController := controllers.NewApplicationController()
+
+			router.Get("/", applicationController.Index)
+			router.Get("/{token}", applicationController.Show)
+			router.Post("/", applicationController.Store)
+			router.Put("/{token}", applicationController.Update)
+		})
+	})
 }
