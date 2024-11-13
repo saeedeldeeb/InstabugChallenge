@@ -1,0 +1,11 @@
+CREATE TABLE messages
+(
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    chat_id    BIGINT NOT NULL,
+    number     INT    NOT NULL,
+    body       TEXT   NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (chat_id) REFERENCES chats (id) ON DELETE CASCADE,
+    UNIQUE (chat_id, number)
+);

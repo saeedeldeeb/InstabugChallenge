@@ -1,0 +1,24 @@
+version: '3.5'
+
+services:
+  chat:
+    build:
+      context: .
+    ports:
+      - "3000:3000"
+
+  db:
+    image: mysql:latest
+    restart: always
+    volumes:
+      - ./tmp/db:/tmp/mysql
+    environment:
+      MYSQL_HOST: db
+      MYSQL_DATABASE: chat_system
+      MYSQL_USER: instabug
+      MYSQL_PASSWORD: password123
+      MYSQL_ROOT_PASSWORD: root
+    expose:
+      - "3306"
+    ports:
+      - "3306:3306"
