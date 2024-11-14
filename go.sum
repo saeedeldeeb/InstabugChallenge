@@ -402,6 +402,8 @@ github.com/goravel/framework v1.14.7 h1:mO8HFy8dU0wWRUaLcGrUbXdIyXsC0YWC+VdYouvi
 github.com/goravel/framework v1.14.7/go.mod h1:rScDXGQZdoVfyxemNPmijlz/2a+lWNOa4jTuak5GGVg=
 github.com/goravel/gin v1.2.5 h1:gbLK4WKUl/tqwgsUlHUNUQ4NLGhj80WCyso8TvkImsA=
 github.com/goravel/gin v1.2.5/go.mod h1:KwInIfvoVP66vXPFJSB+ujNDyj12rR+XLNLdIWu0f6g=
+github.com/goravel/redis v1.2.1 h1:mlRBnWi9r313QusDCCf0UZ9HgQzjSkCBIPL4kHPAHC0=
+github.com/goravel/redis v1.2.1/go.mod h1:jESGYwpt9XnP0y51ZWu01bvgg/7P74XZZpFt1A6143Q=
 github.com/gorilla/securecookie v1.1.1/go.mod h1:ra0sb63/xPlUeL+yeDciTfxMRAA+MP+HVt/4epWDjd4=
 github.com/gorilla/sessions v1.2.1/go.mod h1:dk2InVEVJ0sfLlnXv9EAgkf6ecYs/i80K/zI+bUmuGM=
 github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 h1:UH//fgunKIs4JdUbpDl1VZCDaL56wXCB/5+wF6uHfaI=
@@ -606,6 +608,8 @@ github.com/spf13/afero v1.11.0 h1:WJQKhtpdm3v2IzqG8VMqrr6Rf3UYpEF239Jy9wNepM8=
 github.com/spf13/afero v1.11.0/go.mod h1:GH9Y3pIexgf1MTIWtNGyogA5MwRIDXGUr+hbWNoBjkY=
 github.com/spf13/cast v1.6.0 h1:GEiTHELF+vaR5dhz3VqZfFSzZjYbgeKDpBxQVS4GYJ0=
 github.com/spf13/cast v1.6.0/go.mod h1:ancEpBxwJDODSW/UG4rDrAqiKolqNNh2DX3mk86cAdo=
+github.com/spf13/cast v1.7.0 h1:ntdiHjuueXFgm5nzDRdOS4yfT43P5Fnud6DH50rz/7w=
+github.com/spf13/cast v1.7.0/go.mod h1:ancEpBxwJDODSW/UG4rDrAqiKolqNNh2DX3mk86cAdo=
 github.com/spf13/cobra v0.0.3/go.mod h1:1l0Ry5zgKvJasoi3XT1TypsSe7PqH0Sj9dhYf7v3XqQ=
 github.com/spf13/pflag v1.0.3/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=
 github.com/spf13/pflag v1.0.5 h1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=

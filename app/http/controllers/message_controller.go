@@ -5,6 +5,7 @@ import (
 	"chat/app/models"
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
+	"time"
 )
 
 type MessageController struct {
@@ -18,6 +19,7 @@ func NewMessageController() *MessageController {
 }
 
 func (r *MessageController) Index(ctx http.Context) http.Response {
+	d := facades.Cache().WithContext(ctx)
 	var application models.Application
 	err := facades.Orm().Query().Where("token", ctx.Request().Input("token")).FirstOrFail(&application)
 
@@ -30,15 +32,23 @@ func (r *MessageController) Index(ctx http.Context) http.Response {
 		return ctx.Response().Json(http.StatusNotFound, nil)
 	}
 
-	var messages []models.Message
-	err = facades.Orm().Query().
-		Where("chat_id", chat.ID).
-		With("Chat").
-		Get(&messages)
+	remember, err := d.Remember("messages", 5*time.Second, func() (any, error) {
+		var messages []models.Message
+		err = facades.Orm().Query().
+			Where("chat_id", chat.ID).
+			With("Chat").
+			Get(&messages)
+		if err != nil {
+			return nil, err
+		}
+		return messages, nil
+	})
 	if err != nil {
+		facades.Log().Error(err)
 		return ctx.Response().Json(http.StatusNotFound, nil)
 	}
-	return ctx.Response().Json(http.StatusOK, transformers.MessagesCollectionResponse(messages))
+
+	return ctx.Response().Json(http.StatusOK, transformers.MessagesCollectionResponse(remember.([]models.Message)))
 }
 
 func (r *MessageController) Show(ctx http.Context) http.Response {

@@ -22,3 +22,10 @@ services:
       - "3306"
     ports:
       - "3306:3306"
+
+  redis:
+    image: redis:latest
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+    ports:
+      - "6380:6379"
