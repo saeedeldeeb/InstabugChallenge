@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"chat/app/http/transformers"
 	"chat/app/models"
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
@@ -32,11 +33,12 @@ func (r *MessageController) Index(ctx http.Context) http.Response {
 	var messages []models.Message
 	err = facades.Orm().Query().
 		Where("chat_id", chat.ID).
+		With("Chat").
 		Get(&messages)
 	if err != nil {
 		return ctx.Response().Json(http.StatusNotFound, nil)
 	}
-	return ctx.Response().Json(http.StatusOK, messages)
+	return ctx.Response().Json(http.StatusOK, transformers.MessagesCollectionResponse(messages))
 }
 
 func (r *MessageController) Show(ctx http.Context) http.Response {
@@ -54,13 +56,14 @@ func (r *MessageController) Show(ctx http.Context) http.Response {
 
 	var message models.Message
 	err = facades.Orm().Query().
-		Where("number", ctx.Request().Input("number")).
+		Where("number", ctx.Request().Input("msg_number")).
 		Where("chat_id", chat.ID).
+		With("Chat").
 		FirstOrFail(&message)
 	if err != nil {
 		return ctx.Response().Json(http.StatusNotFound, nil)
 	}
-	return ctx.Response().Json(http.StatusOK, message)
+	return ctx.Response().Json(http.StatusOK, transformers.MessageResponse(message))
 }
 
 func (r *MessageController) Store(ctx http.Context) http.Response {
@@ -79,7 +82,7 @@ func (r *MessageController) Store(ctx http.Context) http.Response {
 		return ctx.Response().Json(http.StatusNotFound, nil)
 	}
 
-	_, err = facades.Orm().Query().Exec("INSERT INTO messages (number, chat_id, body) SELECT COALESCE(MAX(number), 0)+1, ?, ? FROM messages WHERE chat_id = ?", chat.ID, chat.ID, ctx.Request().Input("body"))
+	_, err = facades.Orm().Query().Exec("INSERT INTO messages (number, chat_id, body) SELECT COALESCE(MAX(number), 0)+1, ?, ? FROM messages WHERE chat_id = ?", chat.ID, ctx.Request().Input("body"), chat.ID)
 	if err != nil {
 		return ctx.Response().Json(http.StatusBadRequest, nil)
 	}

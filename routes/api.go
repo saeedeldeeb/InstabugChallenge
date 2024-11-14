@@ -29,7 +29,7 @@ func Api() {
 			messageController := controllers.NewMessageController()
 
 			router.Get("/", messageController.Index)
-			router.Get("/{number}", messageController.Show)
+			router.Get("/{msg_number}", messageController.Show)
 			router.Post("/", messageController.Store)
 		})
 	})
