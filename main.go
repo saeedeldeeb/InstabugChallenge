@@ -14,6 +14,9 @@ func main() {
 	// This bootstraps the framework and gets it ready for use.
 	bootstrap.Boot()
 
+	// Start schedule by facades.Schedule().
+	go facades.Schedule().Run()
+
 	// Create a channel to listen for OS signals
 	quit := make(chan os.Signal)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
