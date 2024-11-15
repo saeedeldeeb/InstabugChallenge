@@ -5,6 +5,7 @@ import (
 	"github.com/goravel/framework/contracts/cache"
 	"github.com/goravel/framework/contracts/database/orm"
 	"github.com/goravel/framework/facades"
+	"time"
 )
 
 type Message interface {
@@ -39,7 +40,7 @@ func (r *MessageService) GetMessages(appToken, chatNumber string) ([]models.Mess
 		return nil, err
 	}
 
-	remember, err := r.cache.Remember("messages", 5, func() (interface{}, error) {
+	remember, err := r.cache.Remember("messages", time.Minute, func() (interface{}, error) {
 		var messages []models.Message
 		err := facades.Orm().Query().
 			Where("chat_id", chat.ID).
