@@ -26,25 +26,13 @@ func NewMessageService() *MessageService {
 }
 
 func (r *MessageService) GetMessages(appToken, chatNumber string) ([]models.Message, error) {
-	var application models.Application
-	err := facades.Orm().Query().Where("token", appToken).FirstOrFail(&application)
-	if err != nil {
-		return nil, err
-	}
-
-	var chat models.Chat
-	err = facades.Orm().Query().
-		Where("number", chatNumber).
-		Where("application_id", application.ID).
-		FirstOrFail(&chat)
-	if err != nil {
-		return nil, err
-	}
-
 	var messages []models.Message
 	remember, err := r.cache.Remember("app:"+appToken+":chat:"+chatNumber+":messages", time.Minute, func() (interface{}, error) {
 		err := facades.Orm().Query().
-			Where("chat_id", chat.ID).
+			Where("applications.token", appToken).
+			Where("chats.number", chatNumber).
+			Join("JOIN chats ON messages.chat_id = chats.id").
+			Join("JOIN applications ON chats.application_id = applications.id").
 			With("Chat").
 			Get(&messages)
 		if err != nil {
@@ -72,25 +60,13 @@ func (r *MessageService) GetMessages(appToken, chatNumber string) ([]models.Mess
 }
 
 func (r *MessageService) GetMessageByNumber(appToken, chatNumber string, messageNumber int) (models.Message, error) {
-	var application models.Application
-	err := facades.Orm().Query().Where("token", appToken).FirstOrFail(&application)
-	if err != nil {
-		return models.Message{}, err
-	}
-
-	var chat models.Chat
-	err = facades.Orm().Query().
-		Where("number", chatNumber).
-		Where("application_id", application.ID).
-		FirstOrFail(&chat)
-	if err != nil {
-		return models.Message{}, err
-	}
-
 	var message models.Message
-	err = facades.Orm().Query().
-		Where("number", messageNumber).
-		Where("chat_id", chat.ID).
+	err := facades.Orm().Query().
+		Where("applications.token", appToken).
+		Where("chats.number", chatNumber).
+		Where("messages.number", messageNumber).
+		Join("JOIN chats ON messages.chat_id = chats.id").
+		Join("JOIN applications ON chats.application_id = applications.id").
 		With("Chat").
 		FirstOrFail(&message)
 	if err != nil {
@@ -100,16 +76,11 @@ func (r *MessageService) GetMessageByNumber(appToken, chatNumber string, message
 }
 
 func (r *MessageService) CreateMessage(appToken, chatNumber, message string) (models.Message, error) {
-	var application models.Application
-	err := facades.Orm().Query().Where("token", appToken).FirstOrFail(&application)
-	if err != nil {
-		return models.Message{}, err
-	}
-
 	var chat models.Chat
-	err = facades.Orm().Query().
-		Where("number", chatNumber).
-		Where("application_id", application.ID).
+	err := facades.Orm().Query().
+		Where("applications.token", appToken).
+		Where("chats.number", chatNumber).
+		Join("JOIN applications ON chats.application_id = applications.id").
 		FirstOrFail(&chat)
 	if err != nil {
 		return models.Message{}, err

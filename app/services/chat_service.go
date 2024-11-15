@@ -28,16 +28,11 @@ func NewChatService() *ChatService {
 }
 
 func (r *ChatService) GetChats(appToken string) ([]models.Chat, error) {
-	var application models.Application
-	err := facades.Orm().Query().Where("token", appToken).FirstOrFail(&application)
-	if err != nil {
-		return nil, err
-	}
-
 	var chats []models.Chat
 	remember, err := r.cache.Remember("app:"+appToken+":chats", time.Minute, func() (interface{}, error) {
 		err := facades.Orm().Query().
-			Where("application_id", application.ID).
+			Where("applications.token", appToken).
+			Join("JOIN applications ON chats.application_id = applications.id").
 			Get(&chats)
 		if err != nil {
 			return nil, err
@@ -66,16 +61,11 @@ func (r *ChatService) GetChats(appToken string) ([]models.Chat, error) {
 }
 
 func (r *ChatService) GetChatByNumber(appToken string, chatNumber int) (models.Chat, error) {
-	var application models.Application
-	err := facades.Orm().Query().Where("token", appToken).FirstOrFail(&application)
-	if err != nil {
-		return models.Chat{}, err
-	}
-
 	var chat models.Chat
-	err = facades.Orm().Query().
-		Where("number", chatNumber).
-		Where("application_id", application.ID).
+	err := facades.Orm().Query().
+		Where("chats.number", chatNumber).
+		Where("applications.token", appToken).
+		Join("JOIN applications ON chats.application_id = applications.id").
 		FirstOrFail(&chat)
 	if err != nil {
 		return models.Chat{}, err
