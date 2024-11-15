@@ -2,8 +2,11 @@ package services
 
 import (
 	"chat/app/models"
+	"encoding/json"
+	"github.com/goravel/framework/contracts/cache"
 	"github.com/goravel/framework/contracts/database/orm"
 	"github.com/goravel/framework/facades"
+	"time"
 )
 
 type Chat interface {
@@ -14,11 +17,13 @@ type Chat interface {
 
 type ChatService struct {
 	//Dependent services
+	cache cache.Driver
 }
 
 func NewChatService() *ChatService {
 	return &ChatService{
 		//Inject services
+		cache: facades.Cache(),
 	}
 }
 
@@ -30,10 +35,33 @@ func (r *ChatService) GetChats(appToken string) ([]models.Chat, error) {
 	}
 
 	var chats []models.Chat
-	err = facades.Orm().Query().Where("application_id", application.ID).Get(&chats)
+	remember, err := r.cache.Remember("app:"+appToken+":chats", time.Minute, func() (interface{}, error) {
+		err := facades.Orm().Query().
+			Where("application_id", application.ID).
+			Get(&chats)
+		if err != nil {
+			return nil, err
+		}
+
+		// Convert chats to JSON
+		chatsJSON, err := json.Marshal(chats)
+		if err != nil {
+			return nil, err
+		}
+		return string(chatsJSON), nil
+	})
 	if err != nil {
+		facades.Log().Error(err)
 		return nil, err
 	}
+
+	// Convert JSON back to []models.Chat
+	err = json.Unmarshal([]byte(remember.(string)), &chats)
+	if err != nil {
+		facades.Log().Error(err)
+		return nil, err
+	}
+
 	return chats, nil
 }
 

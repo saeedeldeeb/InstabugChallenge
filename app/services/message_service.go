@@ -2,6 +2,7 @@ package services
 
 import (
 	"chat/app/models"
+	"encoding/json"
 	"github.com/goravel/framework/contracts/cache"
 	"github.com/goravel/framework/contracts/database/orm"
 	"github.com/goravel/framework/facades"
@@ -40,8 +41,8 @@ func (r *MessageService) GetMessages(appToken, chatNumber string) ([]models.Mess
 		return nil, err
 	}
 
-	remember, err := r.cache.Remember("messages", time.Minute, func() (interface{}, error) {
-		var messages []models.Message
+	var messages []models.Message
+	remember, err := r.cache.Remember("app:"+appToken+":chat:"+chatNumber+":messages", time.Minute, func() (interface{}, error) {
 		err := facades.Orm().Query().
 			Where("chat_id", chat.ID).
 			With("Chat").
@@ -49,13 +50,25 @@ func (r *MessageService) GetMessages(appToken, chatNumber string) ([]models.Mess
 		if err != nil {
 			return nil, err
 		}
-		return messages, nil
+
+		// Convert chats to JSON
+		messagesJSON, err := json.Marshal(messages)
+		if err != nil {
+			return nil, err
+		}
+		return string(messagesJSON), nil
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return remember.([]models.Message), nil
+	// Convert JSON back to []models.Message
+	err = json.Unmarshal([]byte(remember.(string)), &messages)
+	if err != nil {
+		return nil, err
+	}
+
+	return messages, nil
 }
 
 func (r *MessageService) GetMessageByNumber(appToken, chatNumber string, messageNumber int) (models.Message, error) {
