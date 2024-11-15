@@ -2,74 +2,32 @@ package controllers
 
 import (
 	"chat/app/http/transformers"
-	"chat/app/models"
+	"chat/app/services"
 	"github.com/goravel/framework/contracts/http"
-	"github.com/goravel/framework/facades"
-	"time"
 )
 
 type MessageController struct {
 	//Dependent services
+	msgService services.Message
 }
 
 func NewMessageController() *MessageController {
 	return &MessageController{
 		//Inject services
+		msgService: services.NewMessageService(),
 	}
 }
 
 func (r *MessageController) Index(ctx http.Context) http.Response {
-	d := facades.Cache().WithContext(ctx)
-	var application models.Application
-	err := facades.Orm().Query().Where("token", ctx.Request().Input("token")).FirstOrFail(&application)
-
-	var chat models.Chat
-	err = facades.Orm().Query().
-		Where("number", ctx.Request().Input("number")).
-		Where("application_id", application.ID).
-		FirstOrFail(&chat)
+	message, err := r.msgService.GetMessages(ctx.Request().Input("token"), ctx.Request().Input("number"))
 	if err != nil {
 		return ctx.Response().Json(http.StatusNotFound, nil)
 	}
-
-	remember, err := d.Remember("messages", 5*time.Second, func() (any, error) {
-		var messages []models.Message
-		err = facades.Orm().Query().
-			Where("chat_id", chat.ID).
-			With("Chat").
-			Get(&messages)
-		if err != nil {
-			return nil, err
-		}
-		return messages, nil
-	})
-	if err != nil {
-		facades.Log().Error(err)
-		return ctx.Response().Json(http.StatusNotFound, nil)
-	}
-
-	return ctx.Response().Json(http.StatusOK, transformers.MessagesCollectionResponse(remember.([]models.Message)))
+	return ctx.Response().Json(http.StatusOK, transformers.MessagesCollectionResponse(message))
 }
 
 func (r *MessageController) Show(ctx http.Context) http.Response {
-	var application models.Application
-	err := facades.Orm().Query().Where("token", ctx.Request().Input("token")).FirstOrFail(&application)
-
-	var chat models.Chat
-	err = facades.Orm().Query().
-		Where("number", ctx.Request().Input("number")).
-		Where("application_id", application.ID).
-		FirstOrFail(&chat)
-	if err != nil {
-		return ctx.Response().Json(http.StatusNotFound, nil)
-	}
-
-	var message models.Message
-	err = facades.Orm().Query().
-		Where("number", ctx.Request().Input("msg_number")).
-		Where("chat_id", chat.ID).
-		With("Chat").
-		FirstOrFail(&message)
+	message, err := r.msgService.GetMessageByNumber(ctx.Request().Input("token"), ctx.Request().Input("number"), ctx.Request().InputInt("msg_number"))
 	if err != nil {
 		return ctx.Response().Json(http.StatusNotFound, nil)
 	}
@@ -77,24 +35,9 @@ func (r *MessageController) Show(ctx http.Context) http.Response {
 }
 
 func (r *MessageController) Store(ctx http.Context) http.Response {
-	var application models.Application
-	err := facades.Orm().Query().Where("token", ctx.Request().Input("token")).FirstOrFail(&application)
-	if err != nil {
-		return ctx.Response().Json(http.StatusNotFound, nil)
-	}
-
-	var chat models.Chat
-	err = facades.Orm().Query().
-		Where("number", ctx.Request().Input("number")).
-		Where("application_id", application.ID).
-		FirstOrFail(&chat)
-	if err != nil {
-		return ctx.Response().Json(http.StatusNotFound, nil)
-	}
-
-	_, err = facades.Orm().Query().Exec("INSERT INTO messages (number, chat_id, body) SELECT COALESCE(MAX(number), 0)+1, ?, ? FROM messages WHERE chat_id = ?", chat.ID, ctx.Request().Input("body"), chat.ID)
+	message, err := r.msgService.CreateMessage(ctx.Request().Input("token"), ctx.Request().Input("number"), ctx.Request().Input("body"))
 	if err != nil {
 		return ctx.Response().Json(http.StatusBadRequest, nil)
 	}
-	return ctx.Response().Redirect(http.StatusCreated, "/api/applications/"+ctx.Request().Input("token")+"/chats/"+ctx.Request().Input("number")+"/messages")
+	return ctx.Response().Json(http.StatusCreated, transformers.MessageResponse(message))
 }

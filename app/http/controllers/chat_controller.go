@@ -2,42 +2,33 @@ package controllers
 
 import (
 	"chat/app/http/transformers"
-	"chat/app/models"
+	"chat/app/services"
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
 )
 
 type ChatController struct {
 	//Dependent services
+	chatService services.Chat
 }
 
 func NewChatController() *ChatController {
 	return &ChatController{
 		//Inject services
+		chatService: services.NewChatService(),
 	}
 }
 
 func (r *ChatController) Index(ctx http.Context) http.Response {
-	var application models.Application
-	err := facades.Orm().Query().Where("token", ctx.Request().Input("token")).FirstOrFail(&application)
-
-	var chats []models.Chat
-	err = facades.Orm().Query().Where("application_id", application.ID).Get(&chats)
+	chats, err := r.chatService.GetChats(ctx.Request().Input("token"))
 	if err != nil {
-		return nil
+		return ctx.Response().Json(http.StatusNotFound, nil)
 	}
 	return ctx.Response().Json(http.StatusOK, transformers.ChatsCollectionResponse(chats))
 }
 
 func (r *ChatController) Show(ctx http.Context) http.Response {
-	var application models.Application
-	err := facades.Orm().Query().Where("token", ctx.Request().Input("token")).FirstOrFail(&application)
-
-	var chat models.Chat
-	err = facades.Orm().Query().
-		Where("number", ctx.Request().Input("number")).
-		Where("application_id", application.ID).
-		FirstOrFail(&chat)
+	chat, err := r.chatService.GetChatByNumber(ctx.Request().Input("token"), ctx.Request().InputInt("number"))
 	if err != nil {
 		return ctx.Response().Json(http.StatusNotFound, nil)
 	}
@@ -45,14 +36,10 @@ func (r *ChatController) Show(ctx http.Context) http.Response {
 }
 
 func (r *ChatController) Store(ctx http.Context) http.Response {
-	var application models.Application
-	err := facades.Orm().Query().Where("token", ctx.Request().Input("token")).FirstOrFail(&application)
+	chat, err := r.chatService.CreateChat(ctx.Request().Input("token"))
 	if err != nil {
-		return ctx.Response().Json(http.StatusNotFound, nil)
-	}
-	_, err = facades.Orm().Query().Exec("INSERT INTO chats (number, application_id) SELECT COALESCE(MAX(number), 0)+1, ? FROM chats WHERE application_id = ?", application.ID, application.ID)
-	if err != nil {
+		facades.Log().Error(err)
 		return ctx.Response().Json(http.StatusBadRequest, nil)
 	}
-	return ctx.Response().Redirect(http.StatusCreated, "/api/applications/"+ctx.Request().Input("token")+"/chats")
+	return ctx.Response().Json(http.StatusCreated, transformers.ChatResponse(chat))
 }
