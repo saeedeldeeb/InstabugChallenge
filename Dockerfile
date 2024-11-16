@@ -13,16 +13,7 @@ COPY . .
 
 RUN go mod tidy
 
-#Create .env environment configuration file
-RUN cp .env.example .env
-
-# Generate application key
-RUN go run . artisan key:generate
-
-# Generate JWT secret key
-RUN go run . artisan jwt:secret
-
-# Build the application
+# Only build the application
 RUN go build --ldflags "-extldflags -static" -o main .
 
 FROM alpine:latest
@@ -34,6 +25,10 @@ COPY --from=builder /build/database/ /www/database/
 COPY --from=builder /build/public/ /www/public/
 COPY --from=builder /build/storage/ /www/storage/
 COPY --from=builder /build/resources/ /www/resources/
-COPY --from=builder /build/.env /www/.env
+COPY --from=builder /build/.env.example /www/.env
 
-ENTRYPOINT ["/www/main"]
+# Create an entrypoint script
+COPY docker-entrypoint.sh /www/
+RUN chmod +x /www/docker-entrypoint.sh
+
+ENTRYPOINT ["/www/docker-entrypoint.sh"]
