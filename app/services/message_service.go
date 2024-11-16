@@ -1,12 +1,15 @@
 package services
 
 import (
+	"chat/app/events"
 	"chat/app/models"
 	"encoding/json"
+	"time"
+
 	"github.com/goravel/framework/contracts/cache"
 	"github.com/goravel/framework/contracts/database/orm"
+	"github.com/goravel/framework/contracts/event"
 	"github.com/goravel/framework/facades"
-	"time"
 )
 
 type Message interface {
@@ -121,5 +124,19 @@ func (r *MessageService) CreateMessage(appToken, chatNumber, message string) (mo
 		return models.Message{}, err
 	}
 
-	return r.GetMessageByNumber(appToken, chatNumber, result.MaxNumber+1)
+	msg, err := r.GetMessageByNumber(appToken, chatNumber, result.MaxNumber+1)
+	if err != nil {
+		return models.Message{}, err
+	}
+
+	// Fire an event to index the message in Elasticsearch
+	messagesJSON, _ := json.Marshal(msg)
+	err = facades.Event().Job(&events.MessageCreated{}, []event.Arg{
+		{Type: "string", Value: string(messagesJSON)},
+	}).Dispatch()
+	if err != nil {
+		facades.Log().Error(err)
+	}
+
+	return msg, nil
 }

@@ -49,6 +49,28 @@ services:
     networks:
       - instabug-network
 
+  elasticsearch:
+    image: elasticsearch:8.12.0
+    container_name: instabug-elasticsearch
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTIC_PASSWORD=password123
+      - discovery.type=single-node
+      - xpack.security.enabled=false  # Disable security for development
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"  # Limit memory usage
+    ports:
+      - "9200:9200"  # REST API
+      - "9300:9300"  # Node communication
+    networks:
+      - instabug-network
+    volumes:
+        - ./.elasticsearch/data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 networks:
   instabug-network:
     name: instabug-network
