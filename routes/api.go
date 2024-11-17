@@ -31,6 +31,7 @@ func Api() {
 		router.Prefix("applications/{token}/chats/{number}/messages").Group(func(router route.Router) {
 			messageController := controllers.NewMessageController()
 
+			router.Get("/search", messageController.Search)
 			router.Get("/", messageController.Index)
 			router.Get("/{msg_number}", messageController.Show)
 			router.Post("/", messageController.Store)

@@ -3,6 +3,7 @@ package controllers
 import (
 	"chat/app/http/transformers"
 	"chat/app/services"
+
 	"github.com/goravel/framework/contracts/http"
 )
 
@@ -40,4 +41,12 @@ func (r *MessageController) Store(ctx http.Context) http.Response {
 		return ctx.Response().Json(http.StatusBadRequest, nil)
 	}
 	return ctx.Response().Json(http.StatusCreated, transformers.MessageResponse(message))
+}
+
+func (r *MessageController) Search(ctx http.Context) http.Response {
+	msgs, err := r.msgService.SearchMessages(ctx.Request().Input("token"), ctx.Request().Input("number"), ctx.Request().Input("key"))
+	if err != nil {
+		return ctx.Response().Json(http.StatusBadRequest, nil)
+	}
+	return ctx.Response().Json(http.StatusOK, transformers.MessagesCollectionResponse(msgs))
 }

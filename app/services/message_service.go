@@ -3,9 +3,12 @@ package services
 import (
 	"chat/app/events"
 	"chat/app/models"
+	elasticsearch "chat/pkg"
+	"context"
 	"encoding/json"
 	"time"
 
+	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
 	"github.com/goravel/framework/contracts/cache"
 	"github.com/goravel/framework/contracts/database/orm"
 	"github.com/goravel/framework/contracts/event"
@@ -16,6 +19,7 @@ type Message interface {
 	GetMessages(appToken, chatNumber string) ([]models.Message, error)
 	GetMessageByNumber(appToken, chatNumber string, messageNumber int) (models.Message, error)
 	CreateMessage(appToken, chatNumber, message string) (models.Message, error)
+	SearchMessages(appToken, chatNumber, message string) ([]models.Message, error)
 }
 
 type MessageService struct {
@@ -139,4 +143,29 @@ func (r *MessageService) CreateMessage(appToken, chatNumber, message string) (mo
 	}
 
 	return msg, nil
+}
+
+func (r *MessageService) SearchMessages(appToken, chatNumber, message string) ([]models.Message, error) {
+	// Implement search using pkg/elasticsearch
+	es, err := elasticsearch.NewClient(elasticsearch.Config{
+		Addresses: []string{"http://localhost:9200"},
+		Username:  "elasticsearch",
+		Password:  "password123",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	msgs, err := elasticsearch.Search[models.Message](es, context.Background(), "messages", elasticsearch.SearchOptions{
+		Query: &types.Query{
+			Match: map[string]types.MatchQuery{
+				"Body": {Query: message},
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return msgs, nil
 }
