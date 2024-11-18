@@ -35,6 +35,8 @@ services:
     depends_on:
       - instabug-db
       - instabug-redis
+      - elasticsearch
+      - rabbitmq
     networks:
       - instabug-network
 

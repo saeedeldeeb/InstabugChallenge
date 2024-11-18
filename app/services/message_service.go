@@ -148,7 +148,8 @@ func (r *MessageService) CreateMessage(appToken, chatNumber, message string) (mo
 func (r *MessageService) SearchMessages(appToken, chatNumber, message string) ([]models.Message, error) {
 	// Implement search using pkg/elasticsearch
 	es, err := elastic.NewClient(elastic.Config{
-		Addresses: []string{"http://localhost:9200"},
+		// TODO: get configs from env
+		Addresses: []string{"http://instabug-elasticsearch:9200"},
 		Username:  "elasticsearch",
 		Password:  "password123",
 	})

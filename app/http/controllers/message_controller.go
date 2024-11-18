@@ -39,15 +39,8 @@ func (r *MessageController) Show(ctx http.Context) http.Response {
 }
 
 func (r *MessageController) Store(ctx http.Context) http.Response {
-	message, err := r.msgService.CreateMessage(ctx.Request().Input("token"), ctx.Request().Input("number"), ctx.Request().Input("body"))
-	if err != nil {
-		return ctx.Response().Json(http.StatusBadRequest, nil)
-	}
-	return ctx.Response().Json(http.StatusCreated, transformers.MessageResponse(message))
-}
-
-func (r *MessageController) Search(ctx http.Context) http.Response {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	// TODO: get configs from env
+	conn, err := amqp.Dial("amqp://guest:guest@instabug-rabbitmq:5672/")
 	if err != nil {
 		return ctx.Response().Json(http.StatusBadRequest, nil)
 	}
@@ -93,4 +86,12 @@ func (r *MessageController) Search(ctx http.Context) http.Response {
 	}
 
 	return ctx.Response().Json(http.StatusCreated, nil)
+}
+
+func (r *MessageController) Search(ctx http.Context) http.Response {
+	msgs, err := r.msgService.SearchMessages(ctx.Request().Input("token"), ctx.Request().Input("number"), ctx.Request().Input("key"))
+	if err != nil {
+		return ctx.Response().Json(http.StatusBadRequest, nil)
+	}
+	return ctx.Response().Json(http.StatusOK, transformers.MessagesCollectionResponse(msgs))
 }

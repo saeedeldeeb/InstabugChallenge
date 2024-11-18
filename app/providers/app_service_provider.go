@@ -16,7 +16,7 @@ func (receiver *AppServiceProvider) Register(app foundation.Application) {
 func (receiver *AppServiceProvider) Boot(app foundation.Application) {
 	// Create a new worker in go routine
 	go func() {
-		worker, err := workers.NewMessageWorker("amqp://guest:guest@localhost:5672/", "message_queue")
+		worker, err := workers.NewMessageWorker("amqp://guest:guest@instabug-rabbitmq:5672/", "message_queue")
 		if err != nil {
 			log.Fatalf("Failed to create worker: %v", err)
 		}

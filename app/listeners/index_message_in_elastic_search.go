@@ -36,7 +36,7 @@ func (receiver *IndexMessageInElasticSearch) Handle(args ...any) error {
 
 	// TODO: get configs from env
 	es, err := elasticsearch.NewClient(elasticsearch.Config{
-		Addresses: []string{"http://localhost:9200"},
+		Addresses: []string{"http://instabug-elasticsearch:9200"},
 		Username:  "elasticsearch",
 		Password:  "password123",
 	})
