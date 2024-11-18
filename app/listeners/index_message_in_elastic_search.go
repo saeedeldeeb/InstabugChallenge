@@ -2,7 +2,7 @@ package listeners
 
 import (
 	"chat/app/models"
-	elasticsearch "chat/pkg"
+	elasticsearch "chat/pkg/elastic"
 	"context"
 	"encoding/json"
 	"github.com/goravel/framework/facades"

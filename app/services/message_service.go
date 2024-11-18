@@ -3,7 +3,7 @@ package services
 import (
 	"chat/app/events"
 	"chat/app/models"
-	elasticsearch "chat/pkg"
+	"chat/pkg/elastic"
 	"context"
 	"encoding/json"
 	"time"
@@ -147,7 +147,7 @@ func (r *MessageService) CreateMessage(appToken, chatNumber, message string) (mo
 
 func (r *MessageService) SearchMessages(appToken, chatNumber, message string) ([]models.Message, error) {
 	// Implement search using pkg/elasticsearch
-	es, err := elasticsearch.NewClient(elasticsearch.Config{
+	es, err := elastic.NewClient(elastic.Config{
 		Addresses: []string{"http://localhost:9200"},
 		Username:  "elasticsearch",
 		Password:  "password123",
@@ -156,7 +156,7 @@ func (r *MessageService) SearchMessages(appToken, chatNumber, message string) ([
 		return nil, err
 	}
 
-	msgs, err := elasticsearch.Search[models.Message](es, context.Background(), "messages", elasticsearch.SearchOptions{
+	msgs, err := elastic.Search[models.Message](es, context.Background(), "messages", elastic.SearchOptions{
 		Query: &types.Query{
 			Match: map[string]types.MatchQuery{
 				"Body": {Query: message},
