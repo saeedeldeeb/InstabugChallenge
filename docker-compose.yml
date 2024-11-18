@@ -71,6 +71,15 @@ services:
       timeout: 5s
       retries: 5
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: instabug-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - instabug-network
+
 networks:
   instabug-network:
     name: instabug-network
