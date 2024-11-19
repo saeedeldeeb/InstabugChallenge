@@ -24,6 +24,7 @@ Make sure you have docker installed on your machine.
 - **RabbitMQ** - Used for handling the messages creation between the API and the Worker.
 - **Go Worker** - Worker that handles the message creation.
 - **Event/Listener** - Used to handle the message creation event to store indexed data in Elasticsearch.
+- **Unit Tests** - Unit tests for Application service `go test ./tests/unit/services/`.
 
 ### API Endpoints:
 ```bash
@@ -52,3 +53,4 @@ PUT /applications/:Token/chats/:ChatNumber/messages/:MessageNumber
 - **api** - Go API, you can find the routes, controllers, services, and models.
 - **worker** - Go Worker, you can find the worker that handles the message creation in `./pkg/rabbitmq/message_worker.go`
 - **postman-collection** - Postman collection for the API in `./ChatSys.postman_collection.json`
+- **unit-tests** - Unit tests for Application service in `./tests/unit/services/`
